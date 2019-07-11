@@ -1,7 +1,7 @@
 {
     "name": "halpdesk/laravel-migration-commands",
     "description": "Better commands for migrations when developing a Laravel project",
-    "keywords": ["laravel", "migration", "database", "table", "migrate"],
+    "keywords": ["halpdesk", "laravel", "migration", "database", "table", "migrate"],
     "type": "library",
     "require": {
         "php": ">=7.2.4",
