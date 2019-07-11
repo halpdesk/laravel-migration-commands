@@ -1,6 +1,6 @@
 <?php
 
-namespace Halpdesk\LaravelMigrationCommands\Commands;
+namespace Halpdesk\LaravelMigrationCommands\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
@@ -11,6 +11,7 @@ class DbReseed extends Command
 {
     protected $signature = 'db:reseed';
     protected $description = 'Disable foreign keychecks, truncate all tables, move primary key and reseed';
+
     public function handle()
     {
         $database   = env('DB_DATABASE', null);

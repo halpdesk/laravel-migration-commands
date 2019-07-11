@@ -1,9 +1,10 @@
 <?php
 
-namespace Halpdesk\LaravelMigrationCommands\Commands;
+namespace Halpdesk\LaravelMigrationCommands\Console\Commands;
 
 use Illuminate\Support\Facades\Schema;
-use DB;
+use Illuminate\Support\Facades\DB;
+use Symfony\Component\Console\Helper\ProgressBar;
 
 class MigrateAll extends BaseCommand
 {
@@ -19,8 +20,8 @@ class MigrateAll extends BaseCommand
 
         $migrations = DB::table('migrations')->select('migration', 'batch')->orderByDesc('batch')->orderByDesc('migration')->get();
         $batches = [];
-        foreach ($migrations as $migrations) {
-            $batches[$migrations->batch][] = $migrations->migration;
+        foreach ($migrations as $migration) {
+            $batches[$migration->batch][] = $migration->migration;
         }
         $paths = $this->getMigrations();
 
@@ -28,6 +29,7 @@ class MigrateAll extends BaseCommand
         $this->info('Rolling back tables...'."\n");
         $this->line(str_pad(str_pad('Files', 65) . 'Batch', 73) .' Num');
         foreach ($batches as $batch => $migrations) {
+            // $bar = new ProgressBar($this->output, count($migrations));
             $bar = $this->output->createProgressBar(count($migrations));
             $bar->setFormat('%message% (<comment>%current:2s%/%max:2s%</comment>)');
             foreach ($migrations as $migration) {
@@ -51,19 +53,25 @@ class MigrateAll extends BaseCommand
         $this->info('Migrating new tables...'."\n");
         $this->line(str_pad(str_pad('Files', 65) . 'Batch', 73) .' Num');
         $batch = 0;
-        foreach ($paths as $path) {
-            $batch++;
-            $bar = $this->output->createProgressBar(count($path));
-            $bar->setFormat('%message% (<comment>%current:2s%/%max:2s%</comment>)');
-            foreach ($path as $file) {
+        foreach ($paths as $i => $path) {
+            if ($i != 0) {
 
-                $this->callSilent('migrate:specific', ['--file' => $file, '--batch' => $batch]);
-                $bar->setMessage(str_pad('<info>Migrated:</info> '.substr(last(explode('/', $file)),0,-4), 80) . '[<comment>'.$batch.'</comment>]');
-                // dd($file);
-                $this->line('');
-                $bar->advance();
+                $batch++;
+                // $bar = new ProgressBar($this->output, count($migrations));
+                $bar = $this->output->createProgressBar(count($path));
+                $bar->setFormat('%message% (<comment>%current:2s%/%max:2s%</comment>)');
+                foreach ($path as $file) {
+
+                    // Ignore files such as .gitkeep or .DS_store
+                    if (pathinfo($file, PATHINFO_EXTENSION) == 'php') {
+                        $this->callSilent('migrate:specific', ['--file' => $file, '--batch' => $batch]);
+                        $bar->setMessage(str_pad('<info>Migrated:</info> '.substr(last(explode('/', $file)),0,-4), 80) . '[<comment>'.$batch.'</comment>]');
+                        $this->line('');
+                        $bar->advance();
+                    }
+                }
+                $bar->finish();
             }
-            $bar->finish();
         }
         $this->line("\n");
 

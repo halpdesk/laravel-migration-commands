@@ -1,11 +1,9 @@
 <?php
 
-namespace Halpdesk\LaravelMigrationCommands\Commands;
+namespace Halpdesk\LaravelMigrationCommands\Console\Commands;
 
-use DB;
-use Schema;
-use Illuminate\Console\Command;
-use Symfony\Component\Debug\Exception\FatalErrorException;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class MigrateDropAll extends BaseCommand
 {

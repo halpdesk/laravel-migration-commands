@@ -1,8 +1,7 @@
 <?php
 
-namespace Halpdesk\LaravelMigrationCommands\Commands;
+namespace Halpdesk\LaravelMigrationCommands\Console\Commands;
 
-use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -36,7 +35,33 @@ class MigrateSpecific extends BaseCommand
 
         // Class instantiation
         $className = studly_case(last(explode('_', $migration, 5)));
-        if(!class_exists($className)) {
+
+        if(class_exists($className)) {
+            $class = new $className();
+
+            // Run the migration
+            if ($this->option('rollback')) {
+
+                $class->down();
+
+                DB::table('migrations')->where(['migration' => $migration])->delete();
+
+                $this->line('<info>Rolled back:</info> '.$file);
+
+            } else {
+
+                $class->up();
+
+                DB::table('migrations')->insert([
+                    'migration' => $migration,
+                    'batch' => $batch
+                ]);
+
+                $this->line('<info>Migrated:</info> '.$file);
+            }
+
+        // Else
+        } else {
             $this->error($className . ' is not a class.');
             foreach (file($file) as $key => $line) {
                 if (strpos($line, 'class') !== false) {
@@ -44,30 +69,8 @@ class MigrateSpecific extends BaseCommand
                     break;
                 }
             }
-            throw new FatalErrorException($className . ' is not a class.', 1, 5, $file, $lineNum);
+            throw new FatalErrorException($className . ' is not a class.', 1, 5, $file, $lineNum ?? 0);
             die();
-        }
-        $class = new $className();
-
-        // Run the migration
-        if ($this->option('rollback')) {
-
-            $class->down();
-
-            DB::table('migrations')->where(['migration' => $migration])->delete();
-
-            $this->line('<info>Rolled back:</info> '.$file);
-
-        } else {
-
-            $class->up();
-
-            DB::table('migrations')->insert([
-                'migration' => $migration,
-                'batch' => $batch
-            ]);
-
-            $this->line('<info>Migrated:</info> '.$file);
         }
     }
 }
