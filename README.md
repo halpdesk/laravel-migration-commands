@@ -4,6 +4,12 @@ This package provides commands for migrating files in a Laravel project, which a
 
 By halpdesk, 2019-07-22
 
+## Installation
+
+Open **config/app.php** and insert the following into the _Package Service Providers list_:
+
+`Halpdesk\LaravelMigrationCommands\LaravelServiceProvider::class,`
+
 ## List of Commmands
 
 ### Migrate all tables
