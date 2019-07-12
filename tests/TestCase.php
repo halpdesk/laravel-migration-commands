@@ -18,6 +18,8 @@ use Halpdesk\LaravelMigrationCommands\Console\Kernel as LaravelMigrationCommands
 
 class TestCase extends OrchestraTestCase
 {
+    use CreatesDatabase;
+
     /**
      * @param String    The full path to the root of this project
      */
@@ -30,13 +32,32 @@ class TestCase extends OrchestraTestCase
     {
         parent::setUp();
         $this->initialize();
+        $this->getEnvironmentSetUp($this->app);
 
-        $this->loadMigrationsFrom([
-            '--database' => 'testing',
-            '--path' => static::$dir . '/tests/database/migrations',
-        ]);
-        $this->withFactories(static::$dir . '/tests/database/factories');
+
+        // Set connection
+        $migrator = app('migrator');
+        $migrator->setConnection('mysql_testing');
+
+        // Create database
+        $this->createMysqlTestDatabase($this->app);
+
+        // Load migration files
+        $migrator->path(__DIR__.'/database/migrations');
+
+
+        // $this->loadMigrationsFrom([
+        //     '--database' => env('DB_CONNECTION'),
+        //     '--path' => static::$dir . '/tests/database/migrations',
+        // ]);
+        // $this->withFactories(static::$dir . '/tests/database/factories');
         // $this->artisan('db:seed', ['--class' => DatabaseSeeder::class]);
+    }
+
+    protected function tearDown(): void
+    {
+        $this->dropMysqlTestDatabase($this->app);
+        parent::tearDown();
     }
 
     public static function setUpBeforeClass()
@@ -75,5 +96,23 @@ class TestCase extends OrchestraTestCase
     public function initialize()
     {
         date_default_timezone_set('Europe/Stockholm');
+    }
+
+    /**
+     * Define environment setup.
+     *
+     * @param  \Illuminate\Foundation\Application  $app
+     * @return void
+     */
+    protected function getEnvironmentSetUp($app)
+    {
+        $configFiles = glob(static::$dir.'/config/*.php');
+        foreach ($configFiles as $configFile) {
+            $name   = str_replace(".php", "", basename($configFile));
+            $config = require $configFile;
+            $existingConfig = Config::get($name, []);
+            // Config::set($name, array_replace_recursive($existingConfig, $config));
+            $app['config']->set($name, array_replace_recursive($existingConfig, $config));
+        }
     }
 }
