@@ -6,9 +6,11 @@ By halpdesk, 2019-07-22
 
 ## Installation
 
-Open **config/app.php** and insert the following into the _Package Service Providers list_:
+Open **config/app.php** and insert the following into the _Package Service Providers_ list:
 
 `Halpdesk\LaravelMigrationCommands\LaravelServiceProvider::class,`
+
+Then run `composer dump-autoload`
 
 ## List of Commmands
 
