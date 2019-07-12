@@ -40,8 +40,18 @@ return [
 
         'sqlite' => [
             'driver' => 'sqlite',
-            'database' => env('DB_DATABASE', database_path('database.sqlite')),
+            'database' => __DIR__.'/tests/database/database.sqlite',
             'prefix' => '',
+        ],
+
+        'mysql_testing' => [
+            'driver' => 'mysql',
+            'url' => env('DATABASE_URL'),
+            'host' => '127.0.0.1',
+            'port' => '3306',
+            'database' => 'testing_5d289f48c5828',
+            'username' => 'root',
+            'password' => 'a2kp09',
         ],
     ],
 
