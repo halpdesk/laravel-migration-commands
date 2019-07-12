@@ -29,8 +29,8 @@ class MigrateAll extends BaseCommand
         $this->info('Rolling back tables...'."\n");
         $this->line(str_pad(str_pad('Files', 65) . 'Batch', 73) .' Num');
         foreach ($batches as $batch => $migrations) {
-            // $bar = new ProgressBar($this->output, count($migrations));
-            $bar = $this->output->createProgressBar(count($migrations));
+            $bar = new ProgressBar($this->output, count($migrations));
+            // $bar = $this->output->createProgressBar(count($migrations));
             $bar->setFormat('%message% (<comment>%current:2s%/%max:2s%</comment>)');
             foreach ($migrations as $migration) {
                 foreach ($paths as $path => $files) {
@@ -54,24 +54,21 @@ class MigrateAll extends BaseCommand
         $this->line(str_pad(str_pad('Files', 65) . 'Batch', 73) .' Num');
         $batch = 0;
         foreach ($paths as $i => $path) {
-            if ($i != 0) {
+            $batch++;
+            $bar = new ProgressBar($this->output, count($migrations));
+            // $bar = $this->output->createProgressBar(count($path));
+            $bar->setFormat('%message% (<comment>%current:2s%/%max:2s%</comment>)');
+            foreach ($path as $file) {
 
-                $batch++;
-                // $bar = new ProgressBar($this->output, count($migrations));
-                $bar = $this->output->createProgressBar(count($path));
-                $bar->setFormat('%message% (<comment>%current:2s%/%max:2s%</comment>)');
-                foreach ($path as $file) {
-
-                    // Ignore files such as .gitkeep or .DS_store
-                    if (pathinfo($file, PATHINFO_EXTENSION) == 'php') {
-                        $this->callSilent('migrate:specific', ['--file' => $file, '--batch' => $batch]);
-                        $bar->setMessage(str_pad('<info>Migrated:</info> '.substr(last(explode('/', $file)),0,-4), 80) . '[<comment>'.$batch.'</comment>]');
-                        $this->line('');
-                        $bar->advance();
-                    }
+                // Ignore files such as .gitkeep or .DS_store
+                if (pathinfo($file, PATHINFO_EXTENSION) == 'php') {
+                    $this->callSilent('migrate:specific', ['--file' => $file, '--batch' => $batch]);
+                    $bar->setMessage(str_pad('<info>Migrated:</info> '.substr(last(explode('/', $file)),0,-4), 80) . '[<comment>'.$batch.'</comment>]');
+                    $this->line('');
+                    $bar->advance();
                 }
-                $bar->finish();
             }
+            $bar->finish();
         }
         $this->line("\n");
 

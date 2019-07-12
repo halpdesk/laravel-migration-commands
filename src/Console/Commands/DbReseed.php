@@ -9,20 +9,21 @@ use Illuminate\Support\Facades\Schema;
 
 class DbReseed extends Command
 {
-    protected $signature = 'db:reseed';
-    protected $description = 'Disable foreign keychecks, truncate all tables, move primary key and reseed';
+    protected $signature = 'db:reseed
+        { --class=DatabaseSeeder : The class name of the root seeder }
+        { --connection= : Connection specified in database config }';
+    protected $description = 'Disable foreign keychecks, truncate all tables, move primary key and seeds database';
 
     public function handle()
     {
-        $database   = env('DB_DATABASE', null);
-        $default    = env('DB_CONNECTION', config('database.default'));
-        $connection = config('database.connections')[$default];
+        $connection = empty($this->option('connection')) ? config('database.default') : $this->option('connection');
+        $connectionConfig = config('database.connections')[$connection];
 
         $this->info("\nTruncating database...");
         // begin transaction
         DB::beginTransaction();
         // disable foreign key checks
-        $this->disableForeignKeyCheck($connection['driver']);
+        $this->disableForeignKeyCheck($connectionConfig['driver']);
 
         $tables = DB::connection()->getDoctrineSchemaManager()->listTableNames();
         $bar = $this->output->createProgressBar(count($tables));
@@ -34,12 +35,13 @@ class DbReseed extends Command
             $bar->advance();
         }
         // enable foreign key checks
-        $this->enableForeignKeyCheck($connection['driver']);
+        $this->enableForeignKeyCheck($connectionConfig['driver']);
         // commit
         DB::commit();
 
         $this->info("\n\nSeeding database...\n");
-        $this->call("db:seed");
+
+        $this->call("db:seed", ['--class' => $this->option('class')]);
     }
 
     private function disableForeignKeyCheck($driver)
