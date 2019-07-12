@@ -12,9 +12,9 @@ namespace Halpdesk\LaravelMigrationCommands\Tests;
 
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 use Illuminate\Support\Facades\Config;
-use Halpdesk\LaravelMigrationCommands\Seeders\DatabaseSeeder;
 use Illuminate\Contracts\Console\Kernel;
 use Halpdesk\LaravelMigrationCommands\Console\Kernel as LaravelMigrationCommandsKernel;
+use Absolute\DotEnvManipulator\Libs\DotEnv;
 
 class TestCase extends OrchestraTestCase
 {
@@ -106,6 +106,12 @@ class TestCase extends OrchestraTestCase
      */
     protected function getEnvironmentSetUp($app)
     {
+        $dotenv = new DotEnv(static::$dir, '.env');
+        $envs = $dotenv->toArray();
+        foreach ($envs as $env => $value) {
+            putenv($env.'='.$value);
+        }
+
         $configFiles = glob(static::$dir.'/config/*.php');
         foreach ($configFiles as $configFile) {
             $name   = str_replace(".php", "", basename($configFile));
@@ -114,5 +120,10 @@ class TestCase extends OrchestraTestCase
             // Config::set($name, array_replace_recursive($existingConfig, $config));
             $app['config']->set($name, array_replace_recursive($existingConfig, $config));
         }
+    }
+
+    public function error($val)
+    {
+        dd($val);
     }
 }
