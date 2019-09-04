@@ -5,11 +5,12 @@ namespace Halpdesk\LaravelMigrationCommands\Console\Commands;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Symfony\Component\Debug\Exception\FatalErrorException;
 
 class MigrateSpecific extends BaseCommand
 {
-    protected $signature = 'migrate:specific { --file= } { --batch=? } { --rollback }';
+    protected $signature = 'migrate:specific { --file= } { --batch= } { --rollback }';
     protected $description = 'Migrate specific file';
 
     public function go()
@@ -21,7 +22,7 @@ class MigrateSpecific extends BaseCommand
 
         // Batch number
         $currentBatch = DB::table('migrations')->max('batch');
-        $batch = $this->option('batch') ? $this->option('batch') : (is_null($currentBatch) ? 1 : $currentBatch + 1);
+        $batch = !empty($this->option('batch')) ? $this->option('batch') : (is_null($currentBatch) ? 1 : $currentBatch + 1);
 
         // Require file
         $file = $this->option('file');
@@ -34,7 +35,7 @@ class MigrateSpecific extends BaseCommand
         require_once($file);
 
         // Class instantiation
-        $className = studly_case(last(explode('_', $migration, 5)));
+        $className = Str::studly(last(explode('_', $migration, 5)));
 
         if(class_exists($className)) {
             $class = new $className();
@@ -54,7 +55,7 @@ class MigrateSpecific extends BaseCommand
 
                 DB::table('migrations')->insert([
                     'migration' => $migration,
-                    'batch' => $batch
+                    'batch'     => $batch
                 ]);
 
                 $this->line('<info>Migrated:</info> '.$file);

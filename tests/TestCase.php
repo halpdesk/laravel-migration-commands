@@ -60,7 +60,7 @@ class TestCase extends OrchestraTestCase
         parent::tearDown();
     }
 
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass() : void
     {
         static::$dir = realpath(dirname(realpath(__FILE__)).'/../');
         parent::setUpBeforeClass();
@@ -106,10 +106,12 @@ class TestCase extends OrchestraTestCase
      */
     protected function getEnvironmentSetUp($app)
     {
-        $dotenv = new DotEnv(static::$dir, '.env');
-        $envs = $dotenv->toArray();
-        foreach ($envs as $env => $value) {
-            putenv($env.'='.$value);
+        if (file_exists(static::$dir.'/.env')) {
+            $dotenv = new DotEnv(static::$dir, '.env');
+            $envs = $dotenv->toArray();
+            foreach ($envs as $env => $value) {
+                putenv($env.'='.$value);
+            }
         }
 
         $configFiles = glob(static::$dir.'/config/*.php');

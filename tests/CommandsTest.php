@@ -29,7 +29,10 @@ class CommandsTest extends TestCase
 
         // Tables
         $tables = $this->sm->listTableNames();
-        $this->assertArraySubset(['migrations', 'table_one', 'table_two'], $tables);
+        foreach (['migrations', 'table_one', 'table_two'] as $key => $value) {
+            $this->assertArrayHasKey($key, $tables);
+            $this->assertSame($value, $tables[$key]);
+        }
 
         // Table one
         $this->assertTrue(Schema::hasColumns('table_one', [
@@ -71,7 +74,10 @@ class CommandsTest extends TestCase
 
         $tables = $this->sm->listTableNames();
 
-        $this->assertArraySubset(['migrations', 'table_one'], $tables);
+        foreach (['migrations', 'table_one'] as $key => $value) {
+            $this->assertArrayHasKey($key, $tables);
+            $this->assertSame($value, $tables[$key]);
+        }
         $this->assertCount(2, $tables); // only migrations and table_one
         $this->assertTrue(in_array('table_one', $tables));
         $this->assertFalse(in_array('table_two', $tables));
@@ -87,7 +93,10 @@ class CommandsTest extends TestCase
         ])->run();
 
         $tables = $this->sm->listTableNames();
-        $this->assertArraySubset(['migrations', 'table_one', 'table_two'], $tables);
+        foreach (['migrations', 'table_one', 'table_two'] as $key => $value) {
+            $this->assertArrayHasKey($key, $tables);
+            $this->assertSame($value, $tables[$key]);
+        }
         $tableTwo = $this->sm->listTableDetails('table_two');
         $this->assertFalse($tableTwo->hasIndex('string_unique_unique'));
     }
@@ -101,7 +110,10 @@ class CommandsTest extends TestCase
         ])->run();
 
         $tables = $this->sm->listTableNames();
-        $this->assertArraySubset(['migrations', 'table_one', 'table_two'], $tables);
+        foreach (['migrations', 'table_one', 'table_two'] as $key => $value) {
+            $this->assertArrayHasKey($key, $tables);
+            $this->assertSame($value, $tables[$key]);
+        }
         $tableTwo = $this->sm->listTableDetails('table_two');
         $this->assertFalse($tableTwo->hasIndex('string_unique_unique'));
     }
@@ -120,7 +132,7 @@ class CommandsTest extends TestCase
         try {
             $this->artisan('db:seed', ['--class' => DatabaseSeeder::class])->run();
         } catch (QueryException $e) {
-            $this->assertContains('Duplicate entry', $e->getMessage());
+            $this->assertStringContainsString('Duplicate entry', $e->getMessage());
         }
 
         // This should work
